@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../widgets/otras_categiras.widget.dart';
 import '../widgets/tarjeta_receta_modelo_pequeño.widget.dart';
 import '../widgets/tiempos.widget.dart';
+import 'recetas_guardadas.dart';
 
 List<String> ejemplo = ["hola1", "hola1", "hola1"];
 
@@ -16,7 +17,7 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int currentPageIndex = 0;
-  List<Widget> listaWidgets = [_BodyHome(), MisRecetasBody(), ];
+  List<Widget> listaWidgets = [_BodyHome(), MisRecetasBody(), RecetasGuardadas()];
   @override
   Widget build(BuildContext context) {
     return Scaffold(

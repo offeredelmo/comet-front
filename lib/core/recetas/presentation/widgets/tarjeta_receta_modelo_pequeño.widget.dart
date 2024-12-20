@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 class TarjetaRecetaModeloPequeno extends StatelessWidget {
@@ -39,8 +38,8 @@ class TarjetaRecetaModeloPequeno extends StatelessWidget {
             style: TextStyle(fontSize: 11),
           ),
           Row(
-            children: const [
-              Chip(
+            children: [
+              const Chip(
                 avatar: Icon(Icons.star_border_outlined),
                 label: Text(
                   "3.2",
@@ -48,10 +47,10 @@ class TarjetaRecetaModeloPequeno extends StatelessWidget {
                 ),
                 padding: EdgeInsets.all(0),
               ),
-              SizedBox(
+              const SizedBox(
                 width: 6,
               ),
-              Chip(
+              const Chip(
                 avatar: Icon(Icons.timer_outlined),
                 label: Text(
                   "15m",
@@ -59,6 +58,10 @@ class TarjetaRecetaModeloPequeno extends StatelessWidget {
                 ),
                 padding: EdgeInsets.all(0),
               ),
+              const SizedBox(
+                width: 6,
+              ),
+              IconButton(onPressed: () {}, icon: const Icon(Icons.bookmark_border))
             ],
           )
         ],
