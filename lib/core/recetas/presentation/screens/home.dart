@@ -1,3 +1,4 @@
+import 'package:comet/core/recetas/presentation/screens/mis_ingredientes.dart';
 import 'package:comet/core/recetas/presentation/screens/mis_recetas.dart';
 import 'package:flutter/material.dart';
 
@@ -17,7 +18,12 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int currentPageIndex = 0;
-  List<Widget> listaWidgets = [_BodyHome(), MisRecetasBody(), RecetasGuardadas()];
+  List<Widget> listaWidgets = [
+    _BodyHome(),
+    MisRecetasBody(),
+    RecetasGuardadas(),
+    MisIngredientes()
+  ];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -84,7 +90,7 @@ class ListaRecetasHome extends StatelessWidget {
         padding: const EdgeInsets.all(7),
         itemCount: ejemplo.length,
         itemBuilder: (context, index) {
-          return const Column (
+          return const Column(
             children: [
               Row(
                 children: [
@@ -101,4 +107,3 @@ class ListaRecetasHome extends StatelessWidget {
     );
   }
 }
-

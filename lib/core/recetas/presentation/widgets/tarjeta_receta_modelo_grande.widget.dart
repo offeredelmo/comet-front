@@ -197,7 +197,7 @@ class TarjetaRecetaModeloGrandeIconoGuardar extends StatelessWidget {
                          const SizedBox(
                           width: 6,
                         ),
-                        IconButton(onPressed: (){}, icon: Icon(Icons.bookmark_border))
+                        IconButton(onPressed: (){}, icon: Icon(Icons.bookmark))
                       ],
                     )
                   ],
