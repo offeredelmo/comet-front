@@ -1,10 +1,13 @@
-import 'dart:ffi';
-
-class IngredientEntity {
+class IngredienteEntity {
   final String nombre;
-  final Float cantidad;
+  final double cantidad;
   final String medida;
 
-  IngredientEntity(
+  IngredienteEntity(
       {required this.nombre, required this.cantidad, required this.medida});
+
+
+      static formData(){
+        
+      }
 }

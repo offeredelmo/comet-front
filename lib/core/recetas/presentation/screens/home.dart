@@ -1,10 +1,10 @@
 import 'package:comet/core/recetas/presentation/screens/mis_ingredientes.dart';
 import 'package:comet/core/recetas/presentation/screens/mis_recetas.dart';
 import 'package:flutter/material.dart';
-
 import '../widgets/otras_categiras.widget.dart';
 import '../widgets/tarjeta_receta_modelo_pequeño.widget.dart';
 import '../widgets/tiempos.widget.dart';
+import 'buscador_custom.dart';
 import 'recetas_guardadas.dart';
 
 List<String> ejemplo = ["hola1", "hola1", "hola1"];
@@ -29,7 +29,13 @@ class _HomeState extends State<Home> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("COMET"),
-        actions: [IconButton(onPressed: () {}, icon: const Icon(Icons.search))],
+        actions: [
+          IconButton(
+              onPressed: () {
+                showSearch(context: context, delegate: CustomSearch());
+              },
+              icon: const Icon(Icons.search))
+        ],
       ),
       bottomNavigationBar: NavigationBar(
         onDestinationSelected: (int index) {

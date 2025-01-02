@@ -1,8 +1,9 @@
+import 'package:comet/core/recetas/domain/receta.entity.dart';
 import 'package:flutter/material.dart';
 
 class TarjetaRecetaModeloPequeno extends StatelessWidget {
   const TarjetaRecetaModeloPequeno({
-    super.key,
+    super.key, 
   });
 
   @override

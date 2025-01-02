@@ -23,6 +23,7 @@ class FormTextFormField extends StatelessWidget {
             onTapOutside: (event) {
               focusNombreReceta.unfocus();
             },
+            controller: nombreRecetaController,
             decoration: InputDecoration(
                 labelText: "Nombre de la receta",
                 border:

@@ -1,7 +1,11 @@
 import 'dart:io';
 
+import 'package:comet/core/recetas/domain/ingrdiente.entity.dart';
+import 'package:comet/core/recetas/domain/receta.entity.dart';
+import 'package:comet/core/recetas/presentation/blocks/agregar_receta_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../widgets/form_text_form_field.widget.dart';
 import '../widgets/seleccionar_imagen.widget.dart';
@@ -46,7 +50,11 @@ class _AgregarRecetasBodyState extends State<AgregarRecetasBody> {
 
   //
   late File image = File(''); // Archivo vacío como valor inicial
-
+  void setPickedImage(File newImage) {
+    setState(() {
+      image = newImage;
+    });
+  }
 
   //Sirve para controlar el form de agregar ingredientes
   final _formKeyIngredient = GlobalKey<FormState>();
@@ -59,33 +67,24 @@ class _AgregarRecetasBodyState extends State<AgregarRecetasBody> {
 
   final TextEditingController ingredienteController = TextEditingController();
   final TextEditingController cantidadController = TextEditingController();
-  final TextEditingController MedidaController = TextEditingController();
+  final TextEditingController medidaController = TextEditingController();
 
   //eliminar cuando se cree la entidad y remplazarlo por una list de tipo ingrediente
-  final List<Map<String, dynamic>> ejemploIngredfientes = [
-    {"nombre": "arina", "cantidad": 2, "medida": "kilo"},
-    {"nombre": "huevo", "cantidad": 2, "medida": "pieza"},
-    {"nombre": "azucar", "cantidad": 2, "medida": "kilo"},
-    {"nombre": "mantequilla", "cantidad": 2, "medida": "kilo"},
-  ];
-  late String cantidad = "kilo";
+  final List<IngredienteEntity> ingredientes = [];
+  late String medida = "kilo";
   void agregarIngrediente() {
     if (_formKeyIngredient.currentState!.validate()) {
       final nombreIngrediente = ingredienteController.text;
-      final cantidad = cantidadController.text;
-      final medida = cantidadController.text;
-      final Map<String, dynamic> nuevoIngrediente = {
-        "nombre": nombreIngrediente,
-        "cantidad": cantidad,
-        "medida": medida,
-      };
+      final cantidad = double.tryParse(cantidadController.text) ?? 0.0;
+      final nuevoIngrediente = new IngredienteEntity(
+          nombre: nombreIngrediente, cantidad: cantidad, medida: medida);
       setState(() {
-        ejemploIngredfientes.add(nuevoIngrediente);
+        ingredientes.add(nuevoIngrediente);
       });
 
       print("Nombre del ingrediente: $nombreIngrediente");
       print("Cantidad: $cantidad");
-      print("Medida: $cantidad");
+      print("Medida: $medida");
 
       // Puedes limpiar el formulario si es necesario
       _formKeyIngredient.currentState!.reset();
@@ -94,10 +93,7 @@ class _AgregarRecetasBodyState extends State<AgregarRecetasBody> {
 
   //logica para la lista de procedimientos
   final TextEditingController controllerActualizar = TextEditingController();
-  final List<String> procedimientos = [
-    "trucu truc truc tuercaosflasdhfajshdbfjhkasbdjhfbakjhsdbfjkhabsdjhbfjkhasbdjkhfbasjkdhbfkjhasbdjkhfbajhksd",
-    "alkhdflkuajshdkfjhaskjdhflkajshdkfjhasldjkhflkjashdlfkjhasdlkjhflkjashdflkjhasdjkhfkjasdhflkjhasdlkjhfalkjsdh"
-  ];
+  final List<String> procedimientos = [];
   void eliminarProcedimiento(int index) {
     setState(() {
       procedimientos.removeAt(index);
@@ -130,111 +126,148 @@ class _AgregarRecetasBodyState extends State<AgregarRecetasBody> {
     });
   }
 
-void agregarReceta() {
-  if (_formKey.currentState!.validate()) {
-    print(nombreRecetaController.text);
-    print(image);
-    print(procedimientos);
-    print(ejemploIngredfientes);
-    print(etiquetas);
+  void agregarReceta() {
+    if (_formKey.currentState!.validate()) {
+      setState(() {});
+      final newReceta = new RecetaEntity(
+          title: nombreRecetaController.text,
+          preparation: procedimientos,
+          ingredients: ingredientes,
+          imgfile: image,
+          userId:
+              "675e0640d6b7a3ae20ccfcc3", //es necesario obtener el id del usuario
+          tags: etiquetas);
+      BlocProvider.of<AgregarRecetaBloc>(context)
+          .add(AgregarRecetaEvent(recetaEntity: newReceta));
+    }
   }
-}
   //funcion para guardar y contruir la receta
-
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Center(
-        child: SizedBox(
-          width: MediaQuery.of(context).size.width * 0.9,
-          child: Column(
-            children: [
-              const SizedBox(
-                height: 6,
+    return BlocListener<AgregarRecetaBloc, AgregarRecetaState>(
+        listener: (context, state) {
+          if (state is AgregarRecetaLoading) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("Agregando Producto ....."),
+                backgroundColor: Colors.grey,
               ),
-              FormTextFormField(
-                  formKey: _formKey, focusNombreReceta: focusNombreReceta, nombreRecetaController: nombreRecetaController,),
-              const SizedBox(
-                height: 6,
+            );
+          }
+          if (state is AgregarRecetaError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("A ocurrido un error al agregar la nueva receta"),
+                backgroundColor: Colors.red,
               ),
-              ImagePickerExample(image: image,),
-              const Divider(
-                height: 30,
-                thickness: 1,
-                indent: 0,
-                color: Colors.black54,
+            );
+          }
+          if (state is AgregarRecetaSucces) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("La receta se ha agregado exitosamente."),
+                backgroundColor: Colors.green,
               ),
-              ShowDialogAgregarProcedimiento(
-                focusNombreIngrediente: focusNombreIngrediente,
-                agregarProcedimiento: agregarProcedimiento,
-                editarProcedimiento: actualizarProcedimiento,
-                index: procedimientos.length,
-              ),
-              SizedBox(
-                height: 250,
-                child: ListView.builder(
-                  itemCount: procedimientos.length,
-                  itemBuilder: (context, index) {
-                    final procedimiento = procedimientos[index];
-                    return ExpansionTile(
-                      title: Text("Procedimiento #${index + 1}"),
-                      children: [
-                        Column(
+            );
+          }
+        },
+        child: SingleChildScrollView(
+          child: Center(
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width * 0.9,
+              child: Column(
+                children: [
+                  const SizedBox(
+                    height: 6,
+                  ),
+                  FormTextFormField(
+                    formKey: _formKey,
+                    focusNombreReceta: focusNombreReceta,
+                    nombreRecetaController: nombreRecetaController,
+                  ),
+                  const SizedBox(
+                    height: 6,
+                  ),
+                  ImagePickerExample(
+                    onImageSelected: setPickedImage,
+                  ),
+                  const Divider(
+                    height: 30,
+                    thickness: 1,
+                    indent: 0,
+                    color: Colors.black54,
+                  ),
+                  ShowDialogAgregarProcedimiento(
+                    focusNombreIngrediente: focusNombreIngrediente,
+                    agregarProcedimiento: agregarProcedimiento,
+                    editarProcedimiento: actualizarProcedimiento,
+                    index: procedimientos.length,
+                  ),
+                  SizedBox(
+                    height: 250,
+                    child: ListView.builder(
+                      itemCount: procedimientos.length,
+                      itemBuilder: (context, index) {
+                        final procedimiento = procedimientos[index];
+                        return ExpansionTile(
+                          title: Text("Procedimiento #${index + 1}"),
                           children: [
-                            Text("${procedimiento}"),
-                            Row(
+                            Column(
                               children: [
-                                TextButton(
-                                    onPressed: () {
-                                      eliminarProcedimiento(index);
-                                    },
-                                    child: const Text("Eliminar")),
-                                TextButton(
-                                    onPressed: () {
-                                      showDialogEditarProcedimiento(
-                                          context, index);
-                                    },
-                                    child: const Text("Editar")),
+                                Text("${procedimiento}"),
+                                Row(
+                                  children: [
+                                    TextButton(
+                                        onPressed: () {
+                                          eliminarProcedimiento(index);
+                                        },
+                                        child: const Text("Eliminar")),
+                                    TextButton(
+                                        onPressed: () {
+                                          showDialogEditarProcedimiento(
+                                              context, index);
+                                        },
+                                        child: const Text("Editar")),
+                                  ],
+                                )
                               ],
                             )
                           ],
-                        )
-                      ],
-                    );
-                  },
-                ),
+                        );
+                      },
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      ModalAgregarIngrediente(context);
+                    },
+                    child: const Text("Agregar Ingrediente"),
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  AdministrarEtiquetasWidget(
+                    agregarEtiquetas: agregarEtiqueta,
+                    eliminarEtiqueta: eliminarEtiqueta,
+                    etiquetas: etiquetas,
+                  ),
+                  const SizedBox(
+                    height: 50,
+                  ),
+                  ElevatedButton(
+                      onPressed: () {
+                        agregarReceta();
+                      },
+                      child: Text("Agregar Receta")),
+                  const SizedBox(
+                    height: 50,
+                  ),
+                ],
               ),
-              ElevatedButton(
-                onPressed: () {
-                  ModalAgregarIngrediente(context);
-                },
-                child: const Text("Agregar Ingrediente"),
-              ),
-              const SizedBox(
-                height: 20,
-              ),
-              AdministrarEtiquetasWidget(
-                agregarEtiquetas: agregarEtiqueta,
-                eliminarEtiqueta: eliminarEtiqueta,
-                etiquetas: etiquetas,
-              ),
-                 const SizedBox(
-                height: 50,
-              ),
-              ElevatedButton(onPressed: (){
-                agregarReceta();
-              }, child: Text("Agregar Receta")),
-                 const SizedBox(
-                height: 50,
-              ),
-            ],
-            
-            
+            ),
           ),
-        ),
-      ),
-    );
+        ));
   }
 
   Future<dynamic> showDialogEditarProcedimiento(
@@ -295,13 +328,14 @@ void agregarReceta() {
 
   Future<dynamic> ModalAgregarIngrediente(BuildContext context) {
     final List<DropdownMenuEntry<String>> opciones = [
-      DropdownMenuEntry(value: 'kilo', label: 'Kilo'),
+      DropdownMenuEntry(value: 'kilos', label: 'Kilo'),
       DropdownMenuEntry(value: 'gramo', label: 'Gramo'),
       DropdownMenuEntry(value: 'litro', label: 'Litro'),
       DropdownMenuEntry(value: 'mililitro', label: 'Mililitro'),
       DropdownMenuEntry(value: 'pieza', label: 'Pieza'),
       DropdownMenuEntry(value: 'taza', label: 'Taza'),
       DropdownMenuEntry(value: 'cucharada', label: 'Cucharada'),
+      DropdownMenuEntry(value: 'cucharadita', label: 'Cucharaditas'),
       DropdownMenuEntry(value: 'pizca', label: 'Pizca'),
       DropdownMenuEntry(value: 'algusto', label: 'Al gusto'),
       DropdownMenuEntry(value: 'cuarto', label: 'cuarto'),
@@ -384,7 +418,7 @@ void agregarReceta() {
                                     label: Text("Medida"),
                                     initialSelection: "kilo",
                                     onSelected: (value) {
-                                      cantidad = value!;
+                                      medida = value!;
                                       print('Seleccionado: $value');
                                     },
                                   )),
@@ -421,24 +455,25 @@ void agregarReceta() {
                       ),
                       Expanded(
                         child: ListView.builder(
-                          itemCount: ejemploIngredfientes.length,
+                          itemCount: ingredientes.length,
                           itemBuilder: (context, index) {
+                            final ingrediente = ingredientes[index];
                             return Row(
                               children: [
                                 SizedBox(
                                   width:
                                       MediaQuery.of(context).size.width * 0.4,
-                                  child: Text("ingrediente "),
+                                  child: Text(ingrediente.nombre),
                                 ),
                                 SizedBox(
                                   width:
                                       MediaQuery.of(context).size.width * 0.2,
-                                  child: Text("catidad "),
+                                  child: Text("${ingrediente.cantidad}"),
                                 ),
                                 SizedBox(
                                   width:
                                       MediaQuery.of(context).size.width * 0.3,
-                                  child: Text("medida "),
+                                  child: Text(ingrediente.medida),
                                 )
                               ],
                             );
