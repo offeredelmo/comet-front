@@ -11,14 +11,18 @@ import '../widgets/form_text_form_field.widget.dart';
 import '../widgets/seleccionar_imagen.widget.dart';
 import '../widgets/show_dialog_agregar_procedimiento.widget.dart';
 
-class AgregarReceta extends StatefulWidget {
-  const AgregarReceta({super.key});
+class ActualizarReceta extends StatefulWidget {
+  final RecetaEntity receta;
+
+  const ActualizarReceta({super.key, required this.receta});
 
   @override
-  State<AgregarReceta> createState() => _AgregarRecetaState();
+  State<ActualizarReceta> createState() => _ActualizarRecetaState();
 }
 
-class _AgregarRecetaState extends State<AgregarReceta> {
+class _ActualizarRecetaState extends State<ActualizarReceta> {
+  late RecetaEntity receta;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,30 +30,36 @@ class _AgregarRecetaState extends State<AgregarReceta> {
       appBar: AppBar(
         title: const Text("Agregar una nueva receta"),
       ),
-      body: AgregarRecetasBody(),
+      body: ActualizarRecetaBody(receta: widget.receta),
     );
   }
 }
 
-class AgregarRecetasBody extends StatefulWidget {
-  AgregarRecetasBody({
+class ActualizarRecetaBody extends StatefulWidget {
+  final RecetaEntity receta;
+
+  const ActualizarRecetaBody({
     super.key,
+    required this.receta,
   });
 
   @override
-  State<AgregarRecetasBody> createState() => _AgregarRecetasBodyState();
+  State<ActualizarRecetaBody> createState() => _ActualizarRecetaBodyState();
 }
 
-class _AgregarRecetasBodyState extends State<AgregarRecetasBody> {
+class _ActualizarRecetaBodyState extends State<ActualizarRecetaBody> {
   //sirve para controlar el FormTextFormField
   final _formKey = GlobalKey<FormState>();
 
   final focusNombreReceta = FocusNode();
 
-  final TextEditingController nombreRecetaController = TextEditingController();
+  final TextEditingController nombreRecetaController =
+      TextEditingController(); // se debe de inicializar
 
-  //manejo de archivos para subir la imagen
+  //
   late File image = File(''); // Archivo vacío como valor inicial
+  late String? imgUrl;
+
   void setPickedImage(File newImage) {
     setState(() {
       image = newImage;
@@ -70,31 +80,32 @@ class _AgregarRecetasBodyState extends State<AgregarRecetasBody> {
   final TextEditingController medidaController = TextEditingController();
 
   //eliminar cuando se cree la entidad y remplazarlo por una list de tipo ingrediente
-  final List<IngredienteEntity> ingredientes = [];
+  List<IngredienteEntity> ingredientes =
+      []; // se debe de inicializart con los ingredientes de la receta
   late String medida = "kilo";
   void agregarIngrediente() {
     if (_formKeyIngredient.currentState!.validate()) {
       final nombreIngrediente = ingredienteController.text;
       final cantidad = double.tryParse(cantidadController.text) ?? 0.0;
-      final nuevoIngrediente = IngredienteEntity(
+      final nuevoIngrediente = new IngredienteEntity(
           nombre: nombreIngrediente, cantidad: cantidad, medida: medida);
       setState(() {
         ingredientes.add(nuevoIngrediente);
       });
+
+      print("Nombre del ingrediente: $nombreIngrediente");
+      print("Cantidad: $cantidad");
+      print("Medida: $medida");
+
       // Puedes limpiar el formulario si es necesario
       _formKeyIngredient.currentState!.reset();
     }
   }
 
-  void eliminarIngrediente(int index) {
-    setState(() {
-      ingredientes.removeAt(index);
-    });
-  }
-
   //logica para la lista de procedimientos
   final TextEditingController controllerActualizar = TextEditingController();
-  final List<String> procedimientos = [];
+  List<String> procedimientos =
+      []; // se debe de inicializart con los ingredientes de la receta
   void eliminarProcedimiento(int index) {
     setState(() {
       procedimientos.removeAt(index);
@@ -114,7 +125,7 @@ class _AgregarRecetasBodyState extends State<AgregarRecetasBody> {
   }
 
   //logica para las etiquetas
-  final List<String> etiquetas = ["desayuno", "cena"];
+  List<String> etiquetas = ["desayuno", "cena"];
   void agregarEtiqueta(String etiqueta) {
     setState(() {
       etiquetas.add(etiqueta);
@@ -127,16 +138,10 @@ class _AgregarRecetasBodyState extends State<AgregarRecetasBody> {
     });
   }
 
-  //LOGICA PARA TIEMPO DE PREPARACION
-  final TextEditingController tiempoDePreparacionController =
-      TextEditingController();
-  final FocusNode tiempoDePreparacionFocus = FocusNode();
-  //funcion para guardar y contruir la receta
   void agregarReceta() {
-    print("holaaa soy el tiempo: ${tiempoDePreparacionController.text}");
     if (_formKey.currentState!.validate()) {
       setState(() {});
-      final newReceta = RecetaEntity(
+      final newReceta = new RecetaEntity(
         title: nombreRecetaController.text,
         preparation: procedimientos,
         ingredients: ingredientes,
@@ -148,6 +153,40 @@ class _AgregarRecetasBodyState extends State<AgregarRecetasBody> {
       );
       BlocProvider.of<AgregarRecetaBloc>(context)
           .add(AgregarRecetaEvent(recetaEntity: newReceta));
+    }
+  }
+
+  void eliminarIngrediente(int index) {
+    setState(() {
+      ingredientes.removeAt(index);
+    });
+  }
+
+  //LOGICA PARA TIEMPO DE PREPARACION
+  final TextEditingController tiempoDePreparacionController =
+      TextEditingController();
+  final FocusNode tiempoDePreparacionFocus = FocusNode();
+
+  //funcion para guardar y contruir la receta
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    print(widget.receta.title);
+    print(widget.receta.imgUrl);
+    nombreRecetaController.text = widget.receta.title;
+    ingredientes = widget.receta.ingredients;
+    procedimientos = widget.receta.preparation;
+    etiquetas = widget.receta.tags;
+    tiempoDePreparacionController.text =
+        "${widget.receta.timePreparationInMinutes}";
+    if (widget.receta.imgUrl != null) {
+      print("Pos resulta que si hay pa");
+      imgUrl = widget.receta.imgUrl!;
+    } else {
+      print("holaaaa no hay imagen y me igualo a nadota");
+      imgUrl = null;
+      // asignar una imagen local o otra url depende despues lo veremos
     }
   }
 
@@ -197,8 +236,12 @@ class _AgregarRecetasBodyState extends State<AgregarRecetasBody> {
                         tiempoDePreparacionController,
                     tiempoDePreparacionFocus: tiempoDePreparacionFocus,
                   ),
-                  ImagePickerExample(
+                  const SizedBox(
+                    height: 6,
+                  ),
+                  ImagePickerEdit(
                     onImageSelected: setPickedImage,
+                    urlImage: imgUrl,
                   ),
                   const Divider(
                     height: 30,

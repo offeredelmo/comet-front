@@ -16,7 +16,7 @@ class RecetaRepositoryImpl implements RecetaRepository {
       final resp = await recetasRemoteDataSource.agregarReceta(recetaEntity);
       return right(resp);
     } catch (e) {
-      return Left(LocalFailure());
+      return Left(ServerFailure());
     }
   }
 
@@ -26,8 +26,18 @@ try {
     final resp = await recetasRemoteDataSource.buscadorDeRecetas(texto);
     return Right(resp);
 } catch (e) {
-  return Left(LocalFailure());
+  return Left(ServerFailure());
 }
+  }
+
+  @override
+  Future<Either<Failure, List<RecetaEntity>>> listarMisRecetas(String userId, int pagina, int cantidadPorPaguina) async{
+   try {
+     final resp = await recetasRemoteDataSource.listarMisRecetas(userId, pagina, cantidadPorPaguina);
+     return Right(resp);
+   } catch (e) {
+     return Left(ServerFailure());
+   }
   }
 
   @override
@@ -56,4 +66,6 @@ try {
     // TODO: implement modificarReceta
     throw UnimplementedError();
   }
+  
+  
 }

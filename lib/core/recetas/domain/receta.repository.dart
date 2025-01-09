@@ -10,5 +10,6 @@ abstract class RecetaRepository {
   Future<Either<Failure, RecetaEntity>> eliminarReceta(String id);
   Future<Either<Failure, List<RecetaEntity>>> listarRecetasAleatorias(List<RecetaEntity> recetas);
   Future<Either<Failure, List<RecetaEntity>>> listarRecetasPorTags(List<RecetaEntity> recetas);
+  Future<Either<Failure, List<RecetaEntity>>> listarMisRecetas(String userId, int pagina, int cantidadPorPaguina);
   Future<Either<Failure, List<RecetaEntity>>> buscadorDeRecetas(String texto);
 }

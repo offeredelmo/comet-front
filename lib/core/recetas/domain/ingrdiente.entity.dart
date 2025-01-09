@@ -5,9 +5,4 @@ class IngredienteEntity {
 
   IngredienteEntity(
       {required this.nombre, required this.cantidad, required this.medida});
-
-
-      static formData(){
-        
-      }
 }

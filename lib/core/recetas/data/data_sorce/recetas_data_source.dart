@@ -14,6 +14,8 @@ abstract class RecetasRemoteDataSource {
       List<RecetaEntity> recetas);
   Future<List<RecetaEntity>> listarRecetasPorTags(List<RecetaEntity> recetas);
   Future<List<RecetaEntity>> buscadorDeRecetas(String texto);
+  Future<List<RecetaEntity>> listarMisRecetas(
+      String userId, int pagina, int cantidadPorPaguina);
 }
 
 class RecetasDataSourceImpl implements RecetasRemoteDataSource {
@@ -34,6 +36,7 @@ class RecetasDataSourceImpl implements RecetasRemoteDataSource {
       print("entro al datasource");
       const headers = {'Content-Type': 'application/json'};
       final data = RecetaModel.fromEntity(recetaEntity).aJsonCrearReceta();
+      
       print(json.encode(data));
 
       var response = await dio.request(
@@ -82,14 +85,6 @@ class RecetasDataSourceImpl implements RecetasRemoteDataSource {
 
   @override
   Future<List<RecetaEntity>> buscadorDeRecetas(String texto) async {
-    final List<RecetaEntity> listrecetas = [
-      RecetaEntity(
-          title: "asas",
-          preparation: ["as", "as"],
-          ingredients: [],
-          userId: "asasasasasasa",
-          tags: ["pollo"])
-    ];
     try {
       var headers = {'Content-Type': 'application/json'};
       var data = json.encode({"text": "${texto}"});
@@ -103,7 +98,8 @@ class RecetasDataSourceImpl implements RecetasRemoteDataSource {
       );
       if (response.statusCode == 200) {
         final recetas = (response.data as List<dynamic>)
-            .map((receta) =>RecetaModel.fromJsontoRecetaEntity(receta as Map<String, dynamic>))
+            .map((receta) => RecetaModel.fromJsontoRecetaEntity(
+                receta as Map<String, dynamic>))
             .toList();
         return recetas;
       } else {
@@ -142,6 +138,36 @@ class RecetasDataSourceImpl implements RecetasRemoteDataSource {
   Future<RecetaEntity> modificarReceta(RecetaEntity recetaEntity) {
     // TODO: implement modificarReceta
     throw UnimplementedError();
+  }
+
+  @override
+  Future<List<RecetaEntity>> listarMisRecetas(
+      String userId, int pagina, int cantidadPorPaguina) async {
+    try {
+      var response = await dio.request(
+        'http://10.0.2.2:8080/api/v1/recipe/my-recipes/675e0640d6b7a3ae20ccfcc3/1/20',
+        options: Options(
+          method: 'GET',
+        ),
+      );
+      if (response.statusCode == 200) {
+        print(json.encode(response.data));
+        final recetas = (response.data as List<dynamic>)
+            .map((receta) => RecetaModel.fromJsontoRecetaEntity(
+                receta as Map<String, dynamic>))
+            .toList();
+        return recetas;
+      } else {
+        print(response.statusMessage);
+        throw ServerFailure();
+      }
+    } on DioException catch (dioError) {
+      final failure = handleDioError(dioError);
+      throw failure; // relanzar
+    } catch (e) {
+      print("error: ${e}");
+      throw ServerFailure();
+    }
   }
 
   //manejo de errores dio

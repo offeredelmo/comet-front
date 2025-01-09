@@ -1,8 +1,11 @@
+import 'package:comet/core/recetas/domain/receta.entity.dart';
 import 'package:flutter/material.dart';
 
 class TarjetaRecetaModeloGrande extends StatelessWidget {
+  final RecetaEntity receta;
   const TarjetaRecetaModeloGrande({
     super.key,
+    required this.receta,
   });
 
   @override
@@ -25,10 +28,22 @@ class TarjetaRecetaModeloGrande extends StatelessWidget {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(15),
                       child: Image.network(
-                        "https://recetasdecocina.elmundo.es/wp-content/uploads/2024/11/arroz-con-leche.jpg",
+                        receta.imgUrl!,
                         height: 140,
                         width: MediaQuery.of(context).size.width * 0.4,
                         fit: BoxFit.fill,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            height: 140,
+                            width: MediaQuery.of(context).size.width * 0.4,
+                            color: Colors.grey, // Color de fondo alternativo
+                            child: const Icon(
+                              Icons.broken_image,
+                              size: 50,
+                              color: Colors.white, // Icono para indicar error
+                            ),
+                          );
+                        },
                       ),
                     )
                   ],
@@ -40,29 +55,33 @@ class TarjetaRecetaModeloGrande extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Titulo de la receta"),
+                    Text(receta.title),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          "Dificultad: ${"dificil"}\ningredientes: ${"100"}",
-                          style: TextStyle(fontSize: 11),
+                          "Dificultad: ${"dificil"}\ningredientes: ${receta.ingredientsQuantity}",
+                          style: const TextStyle(fontSize: 13),
                         ),
                         IconButton(
-                            onPressed: () {}, icon: const Icon(Icons.edit))
+                            onPressed: () {
+                              Navigator.pushNamed(context, "/actualizar_receta",
+                                  arguments: receta);
+                            },
+                            icon: const Icon(Icons.edit))
                       ],
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Container(
-                          padding: EdgeInsets.all(2),
+                          padding: const EdgeInsets.all(2),
                           decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(6),
                               color: Colors.white),
-                          child: Row(
+                          child: const Row(
                             children: [
-                              const Icon(Icons.star_border_outlined),
+                              Icon(Icons.star_border_outlined),
                               SizedBox(
                                 width: 3,
                               ),
@@ -74,7 +93,7 @@ class TarjetaRecetaModeloGrande extends StatelessWidget {
                           width: 6,
                         ),
                         Container(
-                          padding: EdgeInsets.all(2),
+                          padding: const EdgeInsets.all(2),
                           decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(6),
                               color: Colors.white),
@@ -84,7 +103,7 @@ class TarjetaRecetaModeloGrande extends StatelessWidget {
                               const SizedBox(
                                 width: 3,
                               ),
-                              Text("15m")
+                              Text("${receta.timePreparationInMinutes}m")
                             ],
                           ),
                         ),
@@ -103,8 +122,6 @@ class TarjetaRecetaModeloGrande extends StatelessWidget {
     );
   }
 }
-
-
 
 class TarjetaRecetaModeloGrandeIconoGuardar extends StatelessWidget {
   const TarjetaRecetaModeloGrandeIconoGuardar({
@@ -194,10 +211,10 @@ class TarjetaRecetaModeloGrandeIconoGuardar extends StatelessWidget {
                             ],
                           ),
                         ),
-                         const SizedBox(
+                        const SizedBox(
                           width: 6,
                         ),
-                        IconButton(onPressed: (){}, icon: Icon(Icons.bookmark))
+                        IconButton(onPressed: () {}, icon: Icon(Icons.bookmark))
                       ],
                     )
                   ],
